@@ -18,5 +18,8 @@ namespace Notif_Models
       
 
         public List<Notification> sendNotif = new List<Notification>();
+
+      
     }
+   
 }

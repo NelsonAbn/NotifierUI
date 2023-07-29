@@ -16,52 +16,83 @@ namespace Notif_DLL
             sqlConnection = new SqlConnection(connectionString);
         }
         public List<Notification> GetSaveNotifications()
-            {
-                UserRepository userRepository = new UserRepository();
-                var insertStatement = "SELECT StudentID, senderName, receiverName, Content, DateTime, IsRead FROM tblNotification";
-                SqlCommand insertCommand = new SqlCommand(insertStatement, sqlConnection);
-            
+        {
+            UserRepository userRepository = new UserRepository();
+            var selectStatement = "SELECT StudentID, senderName, receiverName, Content, DateTime, IsRead FROM tblNotification";
+            SqlCommand selectCommand = new SqlCommand(selectStatement, sqlConnection);
+
             sqlConnection.Open();
-                SqlDataReader reader = insertCommand.ExecuteReader();
+            SqlDataReader reader = selectCommand.ExecuteReader();
 
-                List<Notification> storenotifications = new List<Notification>();
+            List<Notification> storedNotifications = new List<Notification>();
 
-                while (reader.Read())
+            while (reader.Read())
+            {
+                var studentID = reader.GetString(0);
+                var senderName = reader.GetString(1); 
+                var receiverName = reader.GetString(2); 
+                var content = reader.GetString(3);
+                var isRead = reader.GetBoolean(5);
+
+              
+                var sender = userRepository.GetUserByName(senderName);
+                var receiver = userRepository.GetUserByName(receiverName);
+
+             
+                DateTime dateModified;
+                if (reader.IsDBNull(4))
                 {
-                storenotifications.Add(new Notification
-                    {
-                        StudentID = reader.GetString(0),
-                        senderName = userRepository.GetUserByName(reader.GetString(1)),
-                        receiverName = userRepository.GetUserByName(reader.GetString(2)),
-                        Content = reader.GetString(3),
-                        DateModified = Convert.ToDateTime(reader["DateModified"]),
-
-                });
+                    dateModified = DateTime.MinValue; 
+                }
+                else
+                {
+                    dateModified = reader.GetDateTime(4);
                 }
 
-                sqlConnection.Close();
-
-                return storenotifications;
+                storedNotifications.Add(new Notification
+                {
+                    StudentID = studentID,
+                    senderName = sender, 
+                    receiverName = receiver, 
+                    Content = content,
+                    DateModified = dateModified,
+                    IsRead = isRead
+                });
             }
 
-            public void StoreNotifications(Notification storenotifications)
-            {
+            sqlConnection.Close();
+
+            return storedNotifications;
+        }
+
+        public void StoreNotifications(Notification storenotifications)
+        {
             var insertStatement = "INSERT INTO tblNotification (StudentID, senderName, receiverName, Content, DateTime, IsRead) " +
-                      "VALUES (@StudentID, @senderName, @receiverName, @Content, @DateTime, @IsRead)";
+                                  "VALUES (@StudentID, @senderName, @receiverName, @Content, @DateTime, @IsRead)";
             SqlCommand insertCommand = new SqlCommand(insertStatement, sqlConnection);
-                insertCommand.Parameters.AddWithValue("@StudentID", storenotifications.StudentID);
-                insertCommand.Parameters.AddWithValue("@senderName", storenotifications.senderName.Name);
-                insertCommand.Parameters.AddWithValue("@receiverName", storenotifications.receiverName.Name);
-                insertCommand.Parameters.AddWithValue("@Content", storenotifications.Content);
-                insertCommand.Parameters.AddWithValue("@DateTime", storenotifications.DateModified);
-                insertCommand.Parameters.AddWithValue("@IsRead", storenotifications.IsRead);
+            insertCommand.Parameters.AddWithValue("@StudentID", storenotifications.StudentID);
+            insertCommand.Parameters.AddWithValue("@senderName", storenotifications.senderName.Name);
+            insertCommand.Parameters.AddWithValue("@receiverName", storenotifications.receiverName.Name);
+            insertCommand.Parameters.AddWithValue("@Content", storenotifications.Content);
+            insertCommand.Parameters.AddWithValue("@DateTime", storenotifications.DateModified);
+            insertCommand.Parameters.AddWithValue("@IsRead", storenotifications.IsRead);
 
             sqlConnection.Open();
 
-                insertCommand.ExecuteNonQuery();
+            insertCommand.ExecuteNonQuery();
 
+            sqlConnection.Close();
+        }
+        public void DeleteNotificationAndColumn(string studentId, string columnName)
+            {
+                var deleteStatement = $"UPDATE tblNotification SET {columnName} = NULL WHERE StudentID = @StudentID";
+                SqlCommand deleteCommand = new SqlCommand(deleteStatement, sqlConnection);
+                deleteCommand.Parameters.AddWithValue("@StudentID", studentId);
+
+                sqlConnection.Open();
+                deleteCommand.ExecuteNonQuery();
                 sqlConnection.Close();
             }
-        }
-    
+    }
+
 }

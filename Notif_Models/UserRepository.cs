@@ -14,7 +14,7 @@ namespace Notif_Models
         {
             _users = new List<User>
             {
-                 
+                
             };
         }
 
