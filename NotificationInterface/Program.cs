@@ -2,26 +2,54 @@
 using Notif_DLL;
 using Notif_Models;
 using System;
-using System.Configuration;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
-using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Generic;
 
 namespace NotificationInterface
 {
     internal class Program
+    {
+        public static void ViewNotifications(List<Notification> notifications)
         {
-            static void Main(string[] args)
+            if (notifications.Count == 0)
             {
-                Console.WriteLine("Send the Notification ");
+                Console.WriteLine("No notifications found.");
+            }
+            else
+            {
+                Console.WriteLine("List of Notifications:");
+                foreach (var notif in notifications)
 
-                NotificationManagement notificationManagement = new NotificationManagement();
+                {
+                    Console.WriteLine($"Student ID: {notif.StudentID}");
+                    Console.WriteLine($"Sender: {notif.StudentS}");
+                    Console.WriteLine($"Reciever: {notif.StudentR}");
 
-            
+                    Console.WriteLine($"Content: {notif.Content}");
+                    Console.WriteLine($"Date Modified: {notif.DateModified}");
+                    Console.WriteLine($"Is Read: {notif.IsRead}");
+                    Console.WriteLine("-------------------------");
+                }
+            }
+        }
+        static void Main(string[] args)
+        {
+            SqlNotif sqlNotif = new SqlNotif();
+            NotificationManagement notificationManagement = new NotificationManagement(); 
+
+            while (true)
+            {
+                Console.WriteLine("Choose an option:");
+                Console.WriteLine("1. Send Notification");
+                Console.WriteLine("2. View List of Notifications");
+                Console.WriteLine("3. Delete Notification");
+                Console.WriteLine("4. Exit");
+
+                Console.Write("Enter the number of your choice: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
                         Console.Write("Enter student ID: ");
                         string studentId = Console.ReadLine();
 
@@ -34,38 +62,53 @@ namespace NotificationInterface
                         Console.Write("Enter notification content: ");
                         string content = Console.ReadLine();
 
-               
+                        if (!string.IsNullOrEmpty(senderName))
+                        {
+                            notificationManagement.SendNotification(senderName, receiverName, content, studentId);
+                        }
+                        else
+                        {
+                            // Handle the case when senderName is empty or whitespace.
+                            Console.WriteLine("Invalid sender name. Please try again.");
+                            continue; // Go back to the beginning of the loop to try again.
+                        }
 
-                notificationManagement.SendNotification(studentId ,senderName, receiverName, content);
+                        var notification = new Notification
+                        {
+                            StudentID = studentId,
+                            senderName = new User { Name = senderName },
+                            receiverName = new User { Name = receiverName },
+                            Content = content,
+                            DateModified = DateTime.Now,
+                            IsRead = false
+                        };
+                        sqlNotif.StoreNotifications(notification);
 
-                
-                SqlNotif sqlNotif = new SqlNotif();
+                        Console.WriteLine("\nNotification sent and saved successfully!\n");
+                        break;
 
-            var notification = new Notification
-            {
-                StudentID = studentId,
-                senderName = new User { Name = senderName },
-                receiverName = new User { Name = receiverName },
-                Content = content,
-                DateModified = DateTime.Now,
-                IsRead = false
-            };
-            sqlNotif.StoreNotifications(notification);
+                    case "2":
+                        List<Notification> storedNotifications = sqlNotif.GetSaveNotifications();
+                        ViewNotifications(storedNotifications);
+                        break;
 
-         
-            Console.WriteLine("\nNotification saved successfully!\n");
+                    case "3":
+                        Console.Write("Enter student ID to delete: ");
+                        string studentIdToDelete = Console.ReadLine();
 
-              
-           
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
+                        sqlNotif.DeleteNotification(studentIdToDelete);
+                        Console.WriteLine("Notification deleted successfully!\n");
+                        break;
+
+                    case "4":
+                        Console.WriteLine("Exiting the program...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
             }
         }
     }
-   
-
-
-
-
-
-
+}

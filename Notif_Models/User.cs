@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Notif_Models
 {
@@ -13,9 +9,14 @@ namespace Notif_Models
 
         public User()
         {
+            
             Id = string.Empty;
             Name = string.Empty;
         }
+
+        public static implicit operator User(string v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
-

@@ -9,6 +9,8 @@ namespace Notif_Models
     public class Notification
     {
         public string StudentID { get; set; }
+        public string StudentS { get; set; }
+        public string StudentR { get; set; }
         public User senderName { get; set; }
         public User receiverName { get; set; }
         public string Content { get; set; }
@@ -18,5 +20,8 @@ namespace Notif_Models
       
 
         public List<Notification> sendNotif = new List<Notification>();
+
+      
     }
+   
 }
