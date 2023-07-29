@@ -68,9 +68,9 @@ namespace NotificationInterface
                         }
                         else
                         {
-                            // Handle the case when senderName is empty or whitespace.
+                           
                             Console.WriteLine("Invalid sender name. Please try again.");
-                            continue; // Go back to the beginning of the loop to try again.
+                            continue;
                         }
 
                         var notification = new Notification
