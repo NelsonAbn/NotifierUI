@@ -26,8 +26,7 @@ namespace Notif_DLL
 
             using (SqlConnection sqlConnection = new SqlConnection(connectionString))
             {
-                try
-                {
+             
                     var selectStatement = "SELECT StudentID, senderName, receiverName, Content, DateTime, IsRead FROM tblNotification";
                     SqlCommand selectCommand = new SqlCommand(selectStatement, sqlConnection);
 
@@ -73,11 +72,7 @@ namespace Notif_DLL
                         });
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error connecting to the database: {ex.Message}");
-                }
-            }
+         
 
             return storedNotifications;
         }
@@ -110,24 +105,12 @@ namespace Notif_DLL
                 SqlCommand deleteCommand = new SqlCommand(deleteStatement, sqlConnection);
                 deleteCommand.Parameters.AddWithValue("@StudentID", studentId);
 
-                try
-                {
-                    sqlConnection.Open();
-                    int rowsAffected = deleteCommand.ExecuteNonQuery();
+                
+                sqlConnection.Open();
+                int rowsAffected = deleteCommand.ExecuteNonQuery();
 
-                    if (rowsAffected > 0)
-                    {
-                        Console.WriteLine("Notification deleted successfully!");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Notification not found.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error deleting notification: {ex.Message}");
-                }
+                
+               
             }
         }
 
